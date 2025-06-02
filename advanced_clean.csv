@@ -1,0 +1,7 @@
+First Name ,LAST_NAME,Age (years),Email@Address,Salary $$$,  Phone Number  ,Department,Start Date,Active
+John,Doe,25,john@email.com,50000,123-456-7890,IT,2020-01-15,True
+Jane,Smith,30,jane@email.com,60000,987-654-3210,HR,2019-06-20,False
+Bob,Johnson,,bob@email.com,55000,555-123-4567,IT,2021-03-10,True
+,Williams,35,,52000,444-555-6666,Finance,2018-12-05,False
+Alice,Brown,28,alice@email.com,,222-333-4444,IT,2022-02-28,True
+Diana,Miller,22,diana@email.com,48000,111-222-3333,,2021-08-03,True

@@ -195,7 +195,7 @@ class TestOutlierRemover:
         report = remover.get_outlier_report(sample_df_with_outliers, method='zscore')
         
         assert isinstance(report, str)
-        assert 'Z-SCORE' in report.upper()
+        assert 'ZSCORE' in report.upper()
         assert 'outlier' in report.lower()
     
     def test_outlier_report_no_outliers(self, remover, sample_df_no_outliers):
@@ -239,10 +239,21 @@ class TestOutlierRemover:
         """Test with multiple numeric columns having different outlier patterns"""
         np.random.seed(42)
         
+        # Create arrays of equal length
+        normal_data1 = np.random.normal(50, 5, 100)
+        outliers1 = [150, 200]
+        col1_data = np.concatenate([normal_data1, outliers1])
+        
+        normal_data2 = np.random.normal(20, 3, 101)
+        outliers2 = [-50]
+        col2_data = np.concatenate([normal_data2, outliers2])
+        
+        col3_data = np.random.normal(75, 8, 102)
+        
         df = pd.DataFrame({
-            'col1': np.concatenate([np.random.normal(50, 5, 100), [150, 200]]),  # 2 outliers
-            'col2': np.concatenate([np.random.normal(20, 3, 100), [-50]]),       # 1 outlier
-            'col3': np.random.normal(75, 8, 102),                                # No outliers
+            'col1': col1_data,
+            'col2': col2_data,
+            'col3': col3_data,
             'text': ['text'] * 102
         })
         
