@@ -216,7 +216,7 @@ class TypeStandardizer:
     def _convert_to_datetime(self, series: pd.Series) -> pd.Series:
         """Convert series to datetime type"""
         try:
-            return pd.to_datetime(series, errors='coerce', infer_datetime_format=True)
+            return pd.to_datetime(series, errors='coerce')
         except:
             return series
     

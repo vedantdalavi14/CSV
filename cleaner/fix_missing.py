@@ -106,7 +106,7 @@ class MissingDataHandler:
                     if strategy == 'mean':
                         if pd.api.types.is_numeric_dtype(df[column]):
                             fill_value = df[column].mean()
-                            result_df[column].fillna(fill_value, inplace=True)
+                            result_df[column] = result_df[column].fillna(fill_value)
                             fill_values[column] = fill_value
                             columns_filled.append(column)
                             self.logger.debug(f"Filled {original_missing} missing values in '{column}' with mean: {fill_value:.4f}")
@@ -116,7 +116,7 @@ class MissingDataHandler:
                     elif strategy == 'median':
                         if pd.api.types.is_numeric_dtype(df[column]):
                             fill_value = df[column].median()
-                            result_df[column].fillna(fill_value, inplace=True)
+                            result_df[column] = result_df[column].fillna(fill_value)
                             fill_values[column] = fill_value
                             columns_filled.append(column)
                             self.logger.debug(f"Filled {original_missing} missing values in '{column}' with median: {fill_value:.4f}")
@@ -126,7 +126,7 @@ class MissingDataHandler:
                     elif strategy == 'mode':
                         if not df[column].mode().empty:
                             fill_value = df[column].mode().iloc[0]
-                            result_df[column].fillna(fill_value, inplace=True)
+                            result_df[column] = result_df[column].fillna(fill_value)
                             fill_values[column] = fill_value
                             columns_filled.append(column)
                             self.logger.debug(f"Filled {original_missing} missing values in '{column}' with mode: {fill_value}")

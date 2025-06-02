@@ -28,7 +28,7 @@ from utils.logger import setup_logger
 @click.option('--output', '-o', default=None, help='Output file path (default: adds _cleaned suffix)')
 @click.option('--excel', is_flag=True, help='Export to Excel format (.xlsx)')
 @click.option('--log', default=None, help='Log file path (default: cleaning.log)')
-@click.option('--preview', is_flag=True, default=True, help='Show preview of cleaned data')
+@click.option('--preview/--no-preview', default=True, help='Show preview of cleaned data')
 @click.option('--zscore-threshold', default=3.0, type=float, help='Z-score threshold for outlier detection (default: 3.0)')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 def clean_csv(input_file, natural_command, fix_names, fix_missing, drop_outliers, 

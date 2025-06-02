@@ -45,7 +45,7 @@ class OutlierRemover:
         
         if not numeric_columns:
             self.logger.warning("No numeric columns found for outlier detection")
-            return df, {'total_removed': 0, 'numeric_columns': 0}
+            return df, {'total_removed': 0, 'numeric_columns_analyzed': 0}
         
         self.logger.info(f"Analyzing outliers in {len(numeric_columns)} numeric columns")
         

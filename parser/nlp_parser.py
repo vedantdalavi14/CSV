@@ -4,7 +4,7 @@ Converts natural language commands to cleaning flags using regex patterns
 """
 
 import re
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 import logging
 
 
@@ -17,23 +17,23 @@ class NLPParser:
         # Define regex patterns for different cleaning operations
         self.patterns = {
             'fix_names': [
-                r'fix\s+(column\s+)?(names?|headers?|titles?)',
-                r'clean\s+(column\s+)?(names?|headers?|titles?)',
-                r'standardize\s+(column\s+)?(names?|headers?|titles?)',
-                r'normalize\s+(column\s+)?(names?|headers?|titles?)'
+                r'fix\s+(the\s+)?(column\s+)?(names?|headers?|titles?)',
+                r'clean\s+(the\s+)?(column\s+)?(names?|headers?|titles?)',
+                r'standardize\s+(the\s+)?(column\s+)?(names?|headers?|titles?)',
+                r'normalize\s+(the\s+)?(column\s+)?(names?|headers?|titles?)'
             ],
             'fix_missing_mean': [
-                r'(fill|handle|fix)\s+missing\s+(with\s+|using\s+)?mean',
+                r'(fill|handle|fix)\s+missing\s+(data\s+)?(with\s+|using\s+)?mean',
                 r'mean\s+(for\s+)?missing',
                 r'replace\s+missing\s+(with\s+)?mean'
             ],
             'fix_missing_median': [
-                r'(fill|handle|fix)\s+missing\s+(with\s+|using\s+)?median',
+                r'(fill|handle|fix)\s+missing\s+(data\s+)?(with\s+|using\s+)?median',
                 r'median\s+(for\s+)?missing',
                 r'replace\s+missing\s+(with\s+)?median'
             ],
             'fix_missing_mode': [
-                r'(fill|handle|fix)\s+missing\s+(with\s+|using\s+)?mode',
+                r'(fill|handle|fix)\s+missing\s+(data\s+)?(with\s+|using\s+)?mode',
                 r'mode\s+(for\s+)?missing',
                 r'replace\s+missing\s+(with\s+)?mode'
             ],
@@ -41,7 +41,7 @@ class NLPParser:
                 r'drop\s+(rows\s+with\s+)?missing',
                 r'remove\s+(rows\s+with\s+)?missing',
                 r'delete\s+(rows\s+with\s+)?missing',
-                r'(handle|fix)\s+missing\s+(by\s+)?drop'
+                r'(handle|fix)\s+missing\s+(data\s+)?(by\s+)?drop'
             ],
             'drop_outliers_zscore': [
                 r'remove\s+outliers\s+(using\s+)?z.?score',
@@ -68,7 +68,7 @@ class NLPParser:
             ]
         }
     
-    def parse_command(self, command: str) -> Dict[str, any]:
+    def parse_command(self, command: str) -> Dict[str, Any]:
         """
         Parse a natural language command and return corresponding flags
         
