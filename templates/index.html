@@ -3,433 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart CSV Cleaner - Professional Data Cleaning Tool</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>Smart CSV Cleaner - AI-Powered Data Cleaning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --light-bg: #f8f9fa;
-            --dark-text: #2c3e50;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
         }
-
-        .main-container {
-            background: white;
-            margin: 20px auto;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-            max-width: 1200px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 2rem 0;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            margin: 0.5rem 0 0 0;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 2rem;
-        }
-
-        .upload-area {
-            border: 3px dashed #ddd;
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            text-align: center;
-            background: var(--light-bg);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-area:hover {
-            border-color: var(--secondary-color);
-            background: #e3f2fd;
-            transform: translateY(-2px);
-        }
-
-        .upload-area.dragover {
-            border-color: var(--success-color);
-            background: #e8f5e8;
-        }
-
-        .upload-icon {
-            font-size: 4rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-        }
-
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            margin-bottom: 1.5rem;
-            transition: transform 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, var(--light-bg), #e9ecef);
-            border-bottom: 1px solid #dee2e6;
-            border-radius: 12px 12px 0 0 !important;
-            padding: 1rem 1.5rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 2rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #229954);
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .form-control, .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-        }
-
-        .alert {
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .table {
-            font-size: 0.9rem;
-        }
-
-        .table th {
-            background: var(--light-bg);
-            border-top: none;
-            font-weight: 600;
-            color: var(--dark-text);
-        }
-
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .progress {
-            height: 8px;
-            border-radius: 4px;
-            background: #e9ecef;
-        }
-
-        .progress-bar {
-            border-radius: 4px;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .feature-card {
-            background: var(--light-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            color: var(--secondary-color);
-            margin-bottom: 1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--light-bg), #f1f3f4);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--secondary-color);
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .content {
-                padding: 1rem;
-            }
-            
-            .upload-area {
-                padding: 2rem 1rem;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="main-container">
+<body class="text-gray-800 font-sans">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Main Content Box -->
+        <div class="bg-white max-w-9xl mx-auto rounded-xl shadow-2xl overflow-hidden">
             <!-- Header -->
-            <div class="header">
-                <h1><i class="fas fa-magic"></i> Smart CSV Cleaner</h1>
-                <p>Professional data cleaning with natural language processing</p>
-            </div>
+            <header class="text-center p-6 bg-gradient-to-r from-gray-700 via-gray-900 to-black text-white">
+                <h1 class="text-4xl sm:text-5xl font-bold">
+                    <i class="fas fa-magic mr-2"></i>Smart CSV Cleaner
+                </h1>
+                <p class="text-lg text-gray-300 mt-2">Your AI-powered data cleaning assistant.</p>
+            </header>
 
-            <!-- Content -->
-            <div class="content">
-                <!-- Step 1: File Upload -->
-                <div class="card" id="upload-section">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Step 1: Upload Your CSV File</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="upload-area" id="upload-area">
-                            <div class="upload-icon">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
-                            <h4>Drag & Drop your CSV file here</h4>
-                            <p class="text-muted">or click to browse files</p>
-                            <input type="file" id="file-input" accept=".csv" style="display: none;">
-                            <button type="button" class="btn btn-primary mt-3" onclick="document.getElementById('file-input').click()">
-                                <i class="fas fa-folder-open me-2"></i>Choose File
-                            </button>
+            <main class="p-6">
+                
+                <!-- Step 1: Upload -->
+                <div id="upload-section">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <span class="bg-indigo-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">1</span>
+                        Upload Your CSV
+                    </h2>
+                    <div id="upload-area" class="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                        <div class="flex flex-col items-center justify-center">
+                            <i class="fas fa-file-csv text-5xl text-indigo-400"></i>
+                            <p class="mt-4 text-lg text-gray-600">Drag & drop your file here or <span class="text-indigo-600 font-semibold">browse</span></p>
+                            <p class="text-sm text-gray-500 mt-1">Max file size: 16MB</p>
                         </div>
-                        
-                        <div class="loading-spinner" id="upload-loading">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <input type="file" id="file-input" class="hidden">
                             </div>
-                            <p class="mt-3">Analyzing your data...</p>
-                        </div>
+                    <div id="upload-loading" class="hidden mt-4 text-center">
+                        <i class="fas fa-spinner fa-spin text-2xl text-indigo-500"></i>
+                        <p class="mt-2 text-gray-600">Analyzing your file...</p>
                     </div>
                 </div>
 
-                <!-- Step 2: Data Analysis -->
-                <div class="card hidden" id="analysis-section">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Step 2: Data Analysis</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-grid" id="data-stats">
-                            <!-- Stats will be populated here -->
-                        </div>
+                <div id="feedback-container" class="mt-4"></div>
+
+                <!-- Step 2: Analysis & Configuration -->
+                <div id="analysis-section" class="hidden mt-6 fade-in">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                         <span class="bg-green-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">2</span>
+                        File Analysis
+                    </h2>
+                    <div id="data-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4"></div>
                         
-                        <h6><i class="fas fa-table me-2"></i>Data Preview</h6>
-                        <div class="table-responsive">
-                            <table class="table table-striped" id="preview-table">
-                                <thead id="preview-header"></thead>
-                                <tbody id="preview-body"></tbody>
+                    <h3 class="text-xl font-semibold mb-2">Data Preview</h3>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-sm text-left">
+                            <thead id="preview-header" class="bg-gray-50"></thead>
+                            <tbody id="preview-body" class="divide-y"></tbody>
                             </table>
-                        </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Cleaning Options -->
-                <div class="card hidden" id="options-section">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Step 3: Choose Cleaning Options</h5>
+                <div id="options-section" class="hidden mt-6 fade-in">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <span class="bg-purple-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">3</span>
+                        Cleaning Configuration
+                    </h2>
+                    <div class="mb-4">
+                        <label for="natural-command" class="block text-lg font-medium text-gray-700 mb-2">Tell me what to do:</label>
+                        <input type="text" id="natural-command" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 'fix names, fill missing with mean, and remove outliers'">
                     </div>
-                    <div class="card-body">
-                        <!-- Natural Language Input -->
-                        <div class="mb-4">
-                            <label for="natural-command" class="form-label">
-                                <i class="fas fa-comments me-2"></i>Natural Language Command
-                            </label>
-                            <textarea class="form-control" id="natural-command" rows="3" 
-                                placeholder="Try: 'fix column names and fill missing with mean' or 'remove outliers and standardize types'"></textarea>
-                            <div class="form-text">
-                                <strong>Examples:</strong> "fix column names", "fill missing with median", "remove outliers using iqr", "standardize data types"
-                            </div>
+
+                    <div>
+                        <a href="#advanced-options" id="toggle-advanced" class="text-indigo-600 hover:underline"><i class="fas fa-cog mr-1"></i>Toggle Advanced Options</a>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <!-- Manual Options -->
-                                <h6><i class="fas fa-sliders-h me-2"></i>Manual Options</h6>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="fix-names">
-                                    <label class="form-check-label" for="fix-names">
-                                        <strong>Fix Column Names</strong><br>
-                                        <small class="text-muted">Standardize column names (lowercase, underscores)</small>
-                                    </label>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="fix-missing" class="form-label">Handle Missing Data</label>
-                                    <select class="form-select" id="fix-missing">
-                                        <option value="">No action</option>
+                    <div id="advanced-options" class="hidden mt-4 border-t pt-4">
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">Advanced Cleaning Rules</h4>
+                            
+                            <!-- First Row: Selects -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="fix-missing" class="block text-sm font-medium text-gray-700">Handle Missing Data</label>
+                                    <select id="fix-missing" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+                                        <option value="">- No action -</option>
                                         <option value="mean">Fill with Mean</option>
                                         <option value="median">Fill with Median</option>
                                         <option value="mode">Fill with Mode</option>
-                                        <option value="drop">Drop rows with missing data</option>
+                                        <option value="drop">Drop Rows</option>
                                     </select>
                                 </div>
-
-                                <div class="mb-3">
-                                    <label for="drop-outliers" class="form-label">Remove Outliers</label>
-                                    <select class="form-select" id="drop-outliers">
-                                        <option value="">No action</option>
-                                        <option value="zscore">Z-Score Method</option>
-                                        <option value="iqr">IQR Method</option>
+                                <div>
+                                    <label for="drop-outliers" class="block text-sm font-medium text-gray-700">Remove Outliers</label>
+                                    <select id="drop-outliers" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+                                        <option value="">- No action -</option>
+                                        <option value="zscore">Z-Score</option>
+                                        <option value="iqr">IQR</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <h6><i class="fas fa-tools me-2"></i>Advanced Options</h6>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="standardize-types">
-                                    <label class="form-check-label" for="standardize-types">
-                                        <strong>Standardize Data Types</strong><br>
-                                        <small class="text-muted">Automatically detect and convert data types</small>
-                                    </label>
+                            <!-- Second Row: Checkboxes -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="fix-names" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="fix-names" class="font-medium text-gray-700">Standardize Names</label>
+                                        <p class="text-gray-500">e.g., "COLUMN NAME" -> "column_name"</p>
+                                    </div>
                                 </div>
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="standardize-types" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="standardize-types" class="font-medium text-gray-700">Standardize Types</label>
+                                        <p class="text-gray-500">Detect and convert data types.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="remove-duplicates" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="remove-duplicates" class="font-medium text-gray-700">Remove Duplicates</label>
+                                        <p class="text-gray-500">Delete fully duplicate rows.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="trim-whitespace" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="trim-whitespace" class="font-medium text-gray-700">Trim Whitespace</label>
+                                        <p class="text-gray-500">From start/end of text fields.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Third Row: String/Value Manipulation -->
+                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                <div>
+                                    <label for="change-case" class="block text-sm font-medium text-gray-700">Change Text Case</label>
+                                    <select id="change-case" name="change-case" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+                                        <option value="">None</option>
+                                        <option value="lower">Lowercase</option>
+                                        <option value="upper">Uppercase</option>
+                                        <option value="title">Title Case</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="find-value" class="block text-sm font-medium text-gray-700">Find Value</label>
+                                    <input type="text" name="find-value" id="find-value" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="e.g., 'N/A'">
+                                </div>
+                                <div>
+                                    <label for="replace-value" class="block text-sm font-medium text-gray-700">Replace With</label>
+                                    <input type="text" name="replace-value" id="replace-value" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="(leave blank for empty)">
+                                </div>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="zscore-threshold" class="form-label">Z-Score Threshold</label>
-                                    <input type="number" class="form-control" id="zscore-threshold" value="3.0" min="1" max="5" step="0.1">
-                                    <div class="form-text">Higher values are more conservative</div>
-                                </div>
-
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="excel-export">
-                                    <label class="form-check-label" for="excel-export">
-                                        <strong>Export to Excel</strong><br>
-                                        <small class="text-muted">Generate both CSV and Excel files</small>
-                                    </label>
-                                </div>
+                            <!-- Fourth Row: Drop Columns -->
+                            <div>
+                                <label for="drop-columns" class="block text-sm font-medium text-gray-700">Drop Columns</label>
+                                <input type="text" name="drop-columns" id="drop-columns" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="e.g., column1, old_column, useless_data">
+                                <p class="mt-2 text-sm text-gray-500">Enter comma-separated column names to completely remove from the dataset.</p>
                             </div>
                         </div>
 
-                        <div class="text-center mt-4">
-                            <button type="button" class="btn btn-success btn-lg" id="clean-btn">
-                                <i class="fas fa-magic me-2"></i>Clean My Data
-                            </button>
+                        <!-- Final Row: Export -->
+                        <div class="mt-6 border-t border-gray-200 pt-6">
+                             <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="excel-export" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="excel-export" class="font-medium text-gray-700">Export to Excel (.xlsx)</label>
+                                    <p class="text-gray-500">In addition to the standard CSV output, create an Excel file.</p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button id="clean-btn" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg transform hover:scale-105">
+                            <i class="fas fa-broom mr-2"></i>Clean My CSV
+                        </button>
                     </div>
                 </div>
 
                 <!-- Step 4: Results -->
-                <div class="card hidden" id="results-section">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Step 4: Cleaning Results</h5>
+                <div id="results-section" class="hidden mt-6 fade-in">
+                     <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <span class="bg-teal-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">4</span>
+                        Cleaning Complete!
+                    </h2>
+                    <div id="clean-loading" class="hidden text-center p-8">
+                        <p class="text-lg font-semibold text-gray-700">Cleaning in progress...</p>
                     </div>
-                    <div class="card-body">
-                        <div class="loading-spinner" id="clean-loading">
-                            <div class="spinner-border text-success" role="status">
-                                <span class="visually-hidden">Cleaning...</span>
-                            </div>
-                            <p class="mt-3">Processing your data...</p>
+                    <div id="results-content">
+                        <div id="final-stats-container" class="hidden">
+                            <!-- Final stats will be injected here by JavaScript -->
                         </div>
-
-                        <div class="hidden" id="results-content">
-                            <div class="alert alert-success" id="success-message"></div>
-                            
-                            <div class="stats-grid" id="results-stats">
-                                <!-- Results stats will be populated here -->
-                            </div>
-
-                            <h6><i class="fas fa-table me-2"></i>Cleaned Data Preview</h6>
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="results-table">
-                                    <thead id="results-header"></thead>
-                                    <tbody id="results-body"></tbody>
+                        <div id="summary-section" class="mb-6">
+                            <!-- Summary will be injected here -->
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Cleaned Data Preview</h3>
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                             <table class="w-full text-sm text-left">
+                                <thead id="results-header" class="bg-gray-50"></thead>
+                                <tbody id="results-body" class="divide-y"></tbody>
                                 </table>
-                            </div>
-
-                            <div class="text-center mt-4" id="download-buttons">
-                                <!-- Download buttons will be populated here -->
-                            </div>
                         </div>
+                        <div id="download-buttons" class="mt-6 text-center"></div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="/static/app.js?v=1.1"></script>
 </body>
 </html>

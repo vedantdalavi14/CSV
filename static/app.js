@@ -1,71 +1,52 @@
 // Smart CSV Cleaner - Frontend JavaScript
-class CSVCleaner {
-    constructor() {
-        this.currentFile = null;
-        this.fileData = null;
-        this.initializeEventListeners();
-    }
-
-    initializeEventListeners() {
-        // File upload handlers
+document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.getElementById('file-input');
         const uploadArea = document.getElementById('upload-area');
+    const uploadSection = document.getElementById('upload-section');
+    const analysisSection = document.getElementById('analysis-section');
+    const optionsSection = document.getElementById('options-section');
+    const resultsSection = document.getElementById('results-section');
+    const feedbackContainer = document.getElementById('feedback-container');
+    const uploadLoading = document.getElementById('upload-loading');
+    const cleanLoading = document.getElementById('clean-loading');
+    const cleanBtn = document.getElementById('clean-btn');
+    const toggleAdvancedBtn = document.getElementById('toggle-advanced');
+    const advancedOptions = document.getElementById('advanced-options');
 
-        fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-        
-        // Drag and drop handlers
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+    let currentFilename = null;
 
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
+    // --- Initial State ---
+    const setInitialState = () => {
+        analysisSection.classList.add('hidden');
+        optionsSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        uploadSection.classList.remove('hidden');
+        uploadArea.style.display = 'block';
+        uploadLoading.style.display = 'none';
+        feedbackContainer.innerHTML = '';
+    };
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                this.uploadFile(files[0]);
-            }
-        });
+    // --- Core Functions ---
+    const showFeedback = (message, isError = false) => {
+        feedbackContainer.innerHTML = `
+            <div class="fade-in p-4 rounded-md ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                ${message}
+            </div>
+        `;
+        setTimeout(() => feedbackContainer.innerHTML = '', 5000);
+    };
 
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        // Clean button handler
-        document.getElementById('clean-btn').addEventListener('click', () => this.cleanData());
-
-        // Natural language command input
-        document.getElementById('natural-command').addEventListener('input', (e) => {
-            this.parseNaturalCommand(e.target.value);
-        });
-    }
-
-    handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            this.uploadFile(file);
-        }
-    }
-
-    async uploadFile(file) {
-        if (!file.name.toLowerCase().endsWith('.csv')) {
-            this.showError('Please select a CSV file.');
+    const handleFileUpload = async (file) => {
+        if (!file || !file.type.match('text/csv')) {
+            showFeedback('Please select a valid CSV file.', true);
             return;
         }
 
+        uploadLoading.style.display = 'block';
+        uploadArea.style.display = 'none';
+
         const formData = new FormData();
         formData.append('file', file);
-
-        this.showLoading('upload-loading');
-        this.hideSection('analysis-section');
-        this.hideSection('options-section');
-        this.hideSection('results-section');
 
         try {
             const response = await fetch('/api/upload', {
@@ -75,320 +56,185 @@ class CSVCleaner {
 
             const result = await response.json();
 
-            if (result.success) {
-                this.currentFile = result.data.filename;
-                this.fileData = result.data;
-                this.displayDataAnalysis(result.data);
-                this.showSection('analysis-section');
-                this.showSection('options-section');
-                this.showSuccess(result.message);
-            } else {
-                this.showError(result.error);
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Upload failed');
             }
-        } catch (error) {
-            this.showError('Failed to upload file: ' + error.message);
-        } finally {
-            this.hideLoading('upload-loading');
-        }
-    }
+            
+            showFeedback(result.message || `Successfully uploaded ${file.name}`);
+            currentFilename = result.data.filename;
+            displayAnalysis(result.data);
+            
+            uploadSection.classList.add('hidden');
+            analysisSection.classList.remove('hidden');
+            optionsSection.classList.remove('hidden');
 
-    displayDataAnalysis(data) {
-        // Display statistics
+        } catch (error) {
+            showFeedback(`Error: ${error.message}`, true);
+            setInitialState(); // Reset on error
+        } finally {
+            uploadLoading.style.display = 'none';
+        }
+    };
+
+    const displayAnalysis = (data) => {
         const statsContainer = document.getElementById('data-stats');
         statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-number">${data.rows}</div>
-                <div class="text-muted">Rows</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${data.columns}</div>
-                <div class="text-muted">Columns</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${Object.values(data.missing_data).reduce((sum, val) => sum + val, 0)}</div>
-                <div class="text-muted">Missing Values</div>
-            </div>
+            <div class="bg-purple-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-purple-800">Filename</p><p class="text-xl font-bold truncate" title="${data.filename}">${data.filename}</p></div>
+            <div class="bg-blue-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-blue-800">Rows</p><p class="text-xl font-bold">${data.rows.toLocaleString()}</p></div>
+            <div class="bg-yellow-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-yellow-800">Columns</p><p class="text-xl font-bold">${data.columns}</p></div>
+            <div class="bg-red-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-red-800">Missing Values</p><p class="text-xl font-bold">${data.missing_values.toLocaleString()}</p></div>
         `;
 
-        // Display preview table
-        this.displayTable(data.preview, data.column_names, 'preview-header', 'preview-body');
+        const previewHeader = document.getElementById('preview-header');
+        const previewBody = document.getElementById('preview-body');
+        previewHeader.innerHTML = '<tr>' + data.column_names.map(name => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">${name}</th>`).join('') + '</tr>';
+        previewBody.innerHTML = data.preview.map(row => 
+            '<tr>' + data.column_names.map(col => `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row[col] === null || row[col] === undefined ? '' : row[col]}</td>`).join('') + '</tr>'
+        ).join('');
+    };
 
-        // Show missing data details if any
-        const missingCount = Object.values(data.missing_data).reduce((sum, val) => sum + val, 0);
-        if (missingCount > 0) {
-            const missingInfo = Object.entries(data.missing_data)
-                .filter(([col, count]) => count > 0)
-                .map(([col, count]) => `${col}: ${count}`)
-                .join(', ');
-            
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-warning mt-3';
-            alertDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i><strong>Missing Data Found:</strong> ${missingInfo}`;
-            document.getElementById('analysis-section').querySelector('.card-body').appendChild(alertDiv);
-        }
-    }
-
-    displayTable(data, columns, headerId, bodyId) {
-        const header = document.getElementById(headerId);
-        const body = document.getElementById(bodyId);
-
-        // Clear existing content
-        header.innerHTML = '';
-        body.innerHTML = '';
-
-        if (data.length === 0) {
-            body.innerHTML = '<tr><td colspan="100%" class="text-center text-muted">No data to display</td></tr>';
+    const cleanData = async () => {
+        if (!currentFilename) {
+            showFeedback('No file selected for cleaning.', true);
             return;
         }
 
-        // Create header
-        const headerRow = document.createElement('tr');
-        columns.forEach(col => {
-            const th = document.createElement('th');
-            th.textContent = col;
-            headerRow.appendChild(th);
-        });
-        header.appendChild(headerRow);
+        resultsSection.classList.remove('hidden');
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        cleanLoading.style.display = 'block';
+        document.getElementById('results-content').style.display = 'none';
 
-        // Create body rows
-        data.slice(0, 10).forEach(row => {
-            const tr = document.createElement('tr');
-            columns.forEach(col => {
-                const td = document.createElement('td');
-                const value = row[col];
-                td.textContent = value !== null && value !== undefined ? value : 'null';
-                if (value === null || value === undefined || value === '') {
-                    td.classList.add('text-muted');
-                    td.style.fontStyle = 'italic';
-                }
-                tr.appendChild(td);
-            });
-            body.appendChild(tr);
-        });
-
-        // Add "more rows" indicator if needed
-        if (data.length > 10) {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = columns.length;
-            td.className = 'text-center text-muted';
-            td.innerHTML = `<i class="fas fa-ellipsis-h me-2"></i>... and ${data.length - 10} more rows`;
-            tr.appendChild(td);
-            body.appendChild(tr);
-        }
-    }
-
-    async parseNaturalCommand(command) {
-        if (!command.trim()) return;
-
-        try {
-            const response = await fetch('/api/parse-command', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ command: command })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.updateFormFromParsedFlags(result.parsed_flags);
-            }
-        } catch (error) {
-            console.error('Failed to parse command:', error);
-        }
-    }
-
-    updateFormFromParsedFlags(flags) {
-        // Update form controls based on parsed flags
-        document.getElementById('fix-names').checked = flags.fix_names || false;
-        document.getElementById('standardize-types').checked = flags.standardize_types || false;
-        
-        if (flags.fix_missing) {
-            document.getElementById('fix-missing').value = flags.fix_missing;
-        }
-        
-        if (flags.drop_outliers) {
-            document.getElementById('drop-outliers').value = flags.drop_outliers;
-        }
-    }
-
-    async cleanData() {
-        if (!this.currentFile) {
-            this.showError('No file uploaded');
-            return;
-        }
-
-        const naturalCommand = document.getElementById('natural-command').value;
-        const fixNames = document.getElementById('fix-names').checked;
-        const fixMissing = document.getElementById('fix-missing').value || null;
-        const dropOutliers = document.getElementById('drop-outliers').value || null;
-        const standardizeTypes = document.getElementById('standardize-types').checked;
-        const excelExport = document.getElementById('excel-export').checked;
-        const zscoreThreshold = parseFloat(document.getElementById('zscore-threshold').value);
+        const findValue = document.getElementById('find-value').value;
+        const replaceValue = document.getElementById('replace-value').value;
 
         const requestData = {
-            filename: this.currentFile,
-            natural_command: naturalCommand,
-            fix_names: fixNames,
-            fix_missing: fixMissing,
-            drop_outliers: dropOutliers,
-            standardize_types: standardizeTypes,
-            excel_export: excelExport,
-            zscore_threshold: zscoreThreshold
+            filename: currentFilename,
+            natural_command: document.getElementById('natural-command').value,
+            fix_names: document.getElementById('fix-names').checked,
+            standardize_types: document.getElementById('standardize-types').checked,
+            excel: document.getElementById('excel-export').checked,
+            fix_missing: document.getElementById('fix-missing').value,
+            drop_outliers: document.getElementById('drop-outliers').value,
+            remove_duplicates: document.getElementById('remove-duplicates').checked,
+            trim_whitespace: document.getElementById('trim-whitespace').checked,
+            change_case: document.getElementById('change-case').value,
+            find_replace: findValue ? { find: findValue, replace: replaceValue } : null,
+            drop_columns: document.getElementById('drop-columns').value
         };
-
-        this.showSection('results-section');
-        this.showLoading('clean-loading');
-        this.hideElement('results-content');
 
         try {
             const response = await fetch('/api/clean', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(requestData)
             });
 
             const result = await response.json();
-
-            if (result.success) {
-                this.displayResults(result);
-                this.showElement('results-content');
-                this.showSuccess('Data cleaning completed successfully!');
-            } else {
-                this.showError(result.error);
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Cleaning process failed.');
             }
+            displayResults(result);
+
         } catch (error) {
-            this.showError('Failed to clean data: ' + error.message);
+            showFeedback(`Cleaning Error: ${error.message}`, true);
+            resultsSection.classList.add('hidden');
         } finally {
-            this.hideLoading('clean-loading');
+            cleanLoading.style.display = 'none';
+            document.getElementById('results-content').style.display = 'block';
         }
-    }
+    };
+    
+    const displayResults = (data) => {
+        // Display final stats
+        const finalStatsContainer = document.getElementById('final-stats-container');
+        if (data.final_stats) {
+            finalStatsContainer.innerHTML = `
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Final File Analysis</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-purple-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-purple-800">Filename</p><p class="text-xl font-bold truncate" title="${data.output_filename}">${data.output_filename}</p></div>
+                    <div class="bg-blue-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-blue-800">Rows</p><p class="text-xl font-bold">${data.final_stats.rows.toLocaleString()}</p></div>
+                    <div class="bg-yellow-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-yellow-800">Columns</p><p class="text-xl font-bold">${data.final_stats.columns}</p></div>
+                    <div class="bg-red-100 p-4 rounded-lg text-center"><p class="text-sm font-medium text-red-800">Missing Values</p><p class="text-xl font-bold">${data.final_stats.missing_values.toLocaleString()}</p></div>
+                </div>
+            `;
+            finalStatsContainer.classList.remove('hidden');
+        } else {
+            finalStatsContainer.classList.add('hidden');
+        }
 
-    displayResults(result) {
-        // Display success message
-        document.getElementById('success-message').innerHTML = 
-            `<i class="fas fa-check-circle me-2"></i>${result.message}`;
-
-        // Display result statistics
-        const cleanedData = result.cleaned_data;
-        const originalRows = this.fileData.rows;
-        const cleanedRows = cleanedData.rows;
-        const rowsChanged = originalRows - cleanedRows;
-
-        const statsContainer = document.getElementById('results-stats');
-        statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-number">${cleanedRows}</div>
-                <div class="text-muted">Final Rows</div>
-                ${rowsChanged > 0 ? `<small class="text-warning">(-${rowsChanged})</small>` : ''}
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${cleanedData.columns}</div>
-                <div class="text-muted">Columns</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${Object.values(cleanedData.preview).length}</div>
-                <div class="text-muted">Preview Rows</div>
+        const summaryContainer = document.getElementById('summary-section');
+        const transformationsList = data.transformations.map(t => `<li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>${t}</li>`).join('');
+        summaryContainer.innerHTML = `
+            <div class="bg-indigo-50 p-4 rounded-lg">
+                <h4 class="font-bold text-lg text-indigo-800">Cleaning Summary</h4>
+                <p class="text-gray-600 mb-2">Cleaned file: <strong>${data.output_filename}</strong></p>
+                <ul class="space-y-1">${transformationsList || '<li>No transformations were applied.</li>'}</ul>
             </div>
         `;
 
-        // Display cleaned data preview
-        this.displayTable(cleanedData.preview, cleanedData.column_names, 'results-header', 'results-body');
-
-        // Create download buttons
+        const resultsHeader = document.getElementById('results-header');
+        const resultsBody = document.getElementById('results-body');
+        resultsHeader.innerHTML = '<tr>' + data.preview.columns.map(name => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">${name}</th>`).join('') + '</tr>';
+        resultsBody.innerHTML = data.preview.data.map(row => 
+            '<tr>' + data.preview.columns.map(col => `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row[col] === null || row[col] === undefined ? '' : row[col]}</td>`).join('') + '</tr>'
+        ).join('');
+        
         const downloadContainer = document.getElementById('download-buttons');
-        downloadContainer.innerHTML = `
-            <a href="/api/download/${result.output_filename}" class="btn btn-primary btn-lg me-3" download>
-                <i class="fas fa-download me-2"></i>Download CSV
-            </a>
-            ${result.excel_filename ? 
-                `<a href="/api/download/${result.excel_filename}" class="btn btn-success btn-lg" download>
-                    <i class="fas fa-file-excel me-2"></i>Download Excel
-                </a>` : ''
-            }
-        `;
+        let buttonsHTML = `<a href="/api/download/${data.output_filename}" class="inline-block bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-all shadow-md">
+            <i class="fas fa-download mr-2"></i>Download CSV
+        </a>`;
+        if (data.excel_filename) {
+            buttonsHTML += `<a href="/api/download/${data.excel_filename}" class="ml-4 inline-block bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-all shadow-md">
+                <i class="fas fa-file-excel mr-2"></i>Download Excel
+            </a>`;
     }
+        downloadContainer.innerHTML = buttonsHTML;
+    };
 
-    showSection(sectionId) {
-        const section = document.getElementById(sectionId);
-        section.classList.remove('hidden');
-        section.classList.add('fade-in');
-    }
-
-    hideSection(sectionId) {
-        document.getElementById(sectionId).classList.add('hidden');
-    }
-
-    showElement(elementId) {
-        document.getElementById(elementId).classList.remove('hidden');
-    }
-
-    hideElement(elementId) {
-        document.getElementById(elementId).classList.add('hidden');
-    }
-
-    showLoading(loadingId) {
-        document.getElementById(loadingId).style.display = 'block';
-    }
-
-    hideLoading(loadingId) {
-        document.getElementById(loadingId).style.display = 'none';
-    }
-
-    showError(message) {
-        // Remove existing alerts
-        document.querySelectorAll('.alert-danger').forEach(alert => alert.remove());
-
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            <i class="fas fa-exclamation-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        // Insert at the top of content
-        const content = document.querySelector('.content');
-        content.insertBefore(alertDiv, content.firstChild);
-
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
-
-    showSuccess(message) {
-        // Remove existing success alerts
-        document.querySelectorAll('.alert-success').forEach(alert => {
-            if (!alert.id) alert.remove();
+    const setupDragAndDrop = () => {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
         });
-
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        // Insert at the top of content
-        const content = document.querySelector('.content');
-        content.insertBefore(alertDiv, content.firstChild);
-
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('border-indigo-500', 'bg-indigo-50'));
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('border-indigo-500', 'bg-indigo-50'));
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileUpload(files[0]);
             }
-        }, 3000);
-    }
-}
+        });
+    };
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            handleFileUpload(fileInput.files[0]);
+            }
+    });
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-    new CSVCleaner();
+    cleanBtn.addEventListener('click', cleanData);
+
+    toggleAdvancedBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isHidden = advancedOptions.classList.toggle('hidden');
+        if(isHidden) {
+            toggleAdvancedBtn.innerHTML = '<i class="fas fa-cog mr-1"></i>Toggle Advanced Options';
+        } else {
+            toggleAdvancedBtn.innerHTML = '<i class="fas fa-cog mr-1"></i>Hide Advanced Options';
+            }
+    });
+    
+    setupDragAndDrop();
+    setInitialState();
 });

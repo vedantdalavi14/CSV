@@ -1,8 +1,0 @@
-first_name,last_name,age_years,emailaddress,salary,phone_number,department,start_date,active
-John,Doe,25.0,john@email.com,50000.0,123-456-7890,IT,2020-01-15,true
-Jane,Smith,30.0,jane@email.com,60000.0,987-654-3210,HR,2019-06-20,false
-Bob,Johnson,29.0,bob@email.com,55000.0,555-123-4567,IT,2021-03-10,TRUE
-,Williams,35.0,,52000.0,444-555-6666,Finance,2018-12-05,FALSE
-Alice,Brown,28.0,alice@email.com,53500.0,222-333-4444,IT,2022-02-28,1
-Charlie,Davis,150.0,charlie@email.com,1000000.0,,HR,2020-11-18,0
-Diana,Miller,22.0,diana@email.com,48000.0,111-222-3333,,2021-08-03,yes

@@ -61,12 +61,16 @@ def upload_file():
         df = pd.read_csv(filepath)
         
         # Get basic info about the dataset
+        missing_data_per_column = df.isnull().sum()
+        total_missing = int(missing_data_per_column.sum())
+
         info = {
             'filename': filename,
             'rows': len(df),
             'columns': len(df.columns),
+            'missing_values': total_missing,
             'column_names': df.columns.tolist(),
-            'missing_data': df.isnull().sum().to_dict(),
+            'missing_data': missing_data_per_column.to_dict(),
             'data_types': df.dtypes.astype(str).to_dict(),
             'preview': df.head(5).to_dict('records')
         }
@@ -82,7 +86,7 @@ def upload_file():
         return jsonify({'error': f'Error processing file: {str(e)}'}), 500
 
 @app.route('/api/parse-command', methods=['POST'])
-def parse_command():
+def parse_nlp_command():
     """Parse natural language command"""
     try:
         data = request.get_json()
@@ -105,35 +109,35 @@ def parse_command():
         return jsonify({'error': f'Error parsing command: {str(e)}'}), 500
 
 @app.route('/api/clean', methods=['POST'])
-def clean_csv():
-    """Clean the CSV file"""
+def clean_file():
+    data = request.json
+    filename = data.get('filename')
+    
+    if not filename:
+        return jsonify({'error': 'Filename is required'}), 400
+
+    input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    
+    # Extract cleaning flags from request
+    fix_names = data.get('fix_names', False)
+    fix_missing = data.get('fix_missing')
+    drop_outliers = data.get('drop_outliers')
+    standardize_types = data.get('standardize_types', False)
+    excel = data.get('excel', False)
+    natural_command = data.get('natural_command', '')
+
+    # New options
+    remove_duplicates = data.get('remove_duplicates', False)
+    trim_whitespace = data.get('trim_whitespace', False)
+    change_case = data.get('change_case')
+    find_replace = data.get('find_replace') # Expects {'find': 'value', 'replace': 'new_value'}
+    drop_columns_str = data.get('drop_columns', '')
+    drop_columns = [col.strip() for col in drop_columns_str.split(',') if col.strip()] if drop_columns_str else None
+
+    # Instantiate the cleaner and process
     try:
-        data = request.get_json()
-        filename = data.get('filename')
-        natural_command = data.get('natural_command', '')
-        fix_names = data.get('fix_names', False)
-        fix_missing = data.get('fix_missing')
-        drop_outliers = data.get('drop_outliers')
-        standardize_types = data.get('standardize_types', False)
-        excel_export = data.get('excel_export', False)
-        zscore_threshold = data.get('zscore_threshold', 3.0)
-        
-        if not filename:
-            return jsonify({'error': 'No filename provided'}), 400
-        
-        input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        if not os.path.exists(input_path):
-            return jsonify({'error': 'File not found'}), 404
-        
-        # Create output filename
-        base_name = os.path.splitext(filename)[0]
-        output_filename = f"{base_name}_cleaned.csv"
-        output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
-        
-        # Initialize cleaner
-        cleaner = CSVCleaner(logger, zscore_threshold)
-        
-        # Process the CSV
+        # Note: logger is now handled inside CSVCleaner
+        cleaner = CSVCleaner(zscore_threshold=3.0, logger=app.logger) 
         result = cleaner.process_csv(
             input_file=input_path,
             natural_command=natural_command,
@@ -141,43 +145,18 @@ def clean_csv():
             fix_missing=fix_missing,
             drop_outliers=drop_outliers,
             standardize_types=standardize_types,
-            output=output_path,
-            excel=excel_export,
-            preview=False  # We'll handle preview separately
+            remove_duplicates=remove_duplicates,
+            trim_whitespace=trim_whitespace,
+            change_case=change_case,
+            find_replace=find_replace,
+            drop_columns=drop_columns,
+            excel=excel,
+            preview=True # Always get a preview for the web UI
         )
-        
-        if not result['success']:
-            return jsonify({'error': result['error']}), 500
-        
-        # Load the cleaned data for preview
-        cleaned_df = pd.read_csv(output_path)
-        
-        # Prepare response
-        response_data = {
-            'success': True,
-            'message': result['summary'],
-            'output_filename': output_filename,
-            'cleaned_data': {
-                'rows': len(cleaned_df),
-                'columns': len(cleaned_df.columns),
-                'column_names': cleaned_df.columns.tolist(),
-                'preview': cleaned_df.head(10).to_dict('records'),
-                'data_types': cleaned_df.dtypes.astype(str).to_dict()
-            }
-        }
-        
-        # Add Excel file if requested
-        if excel_export:
-            excel_filename = f"{base_name}_cleaned.xlsx"
-            excel_path = os.path.join(app.config['OUTPUT_FOLDER'], excel_filename)
-            cleaned_df.to_excel(excel_path, index=False)
-            response_data['excel_filename'] = excel_filename
-        
-        return jsonify(response_data)
-        
+        return jsonify(result)
     except Exception as e:
-        logger.error(f"Cleaning error: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({'error': f'Error cleaning CSV: {str(e)}'}), 500
+        app.logger.error(f"An error occurred during cleaning: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({'error': f'An internal error occurred: {str(e)}'}), 500
 
 @app.route('/api/download/<filename>')
 def download_file(filename):

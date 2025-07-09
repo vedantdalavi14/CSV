@@ -1,0 +1,3 @@
+[console_scripts]
+clean-csv = cli:clean_csv
+smart-csv-cleaner = cli:clean_csv

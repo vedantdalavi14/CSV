@@ -12,11 +12,15 @@ from .fix_missing import MissingDataHandler
 from .drop_outliers import OutlierRemover
 from .standardize_types import TypeStandardizer
 from .export import DataExporter
+from .remove_duplicates import DuplicateRemover
+from .string_cleaner import StringCleaner
 
 __all__ = [
     'ColumnNameFixer',
     'MissingDataHandler', 
     'OutlierRemover',
     'TypeStandardizer',
-    'DataExporter'
+    'DataExporter',
+    'DuplicateRemover',
+    'StringCleaner'
 ]
