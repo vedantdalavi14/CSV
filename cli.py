@@ -25,6 +25,15 @@ from utils.logger import setup_logger
 @click.option('--drop-outliers', type=click.Choice(['zscore', 'iqr']), 
               help='Remove outliers using Z-score or IQR method')
 @click.option('--standardize-types', is_flag=True, help='Standardize data types automatically')
+
+# New advanced options
+@click.option('--remove-duplicates', is_flag=True, help='Remove duplicate rows.')
+@click.option('--trim-whitespace', is_flag=True, help='Trim leading/trailing whitespace from all cells.')
+@click.option('--change-case', type=click.Choice(['upper', 'lower', 'title']), help='Change text case.')
+@click.option('--find', help='Value to find for replacement.')
+@click.option('--replace', help='Value to replace with.')
+@click.option('--drop-columns', help='Comma-separated list of columns to drop.')
+
 @click.option('--output', '-o', default=None, help='Output file path (default: adds _cleaned suffix)')
 @click.option('--excel', is_flag=True, help='Export to Excel format (.xlsx)')
 @click.option('--log', default=None, help='Log file path (default: cleaning.log)')
@@ -32,7 +41,8 @@ from utils.logger import setup_logger
 @click.option('--zscore-threshold', default=3.0, type=float, help='Z-score threshold for outlier detection (default: 3.0)')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
 def clean_csv(input_file, natural_command, fix_names, fix_missing, drop_outliers, 
-              standardize_types, output, excel, log, preview, zscore_threshold, verbose):
+              standardize_types, remove_duplicates, trim_whitespace, change_case,
+              find, replace, drop_columns, output, excel, log, preview, zscore_threshold, verbose):
     """
     Smart CSV Cleaner - Clean messy CSV files using CLI flags or natural language.
     
@@ -47,7 +57,15 @@ def clean_csv(input_file, natural_command, fix_names, fix_missing, drop_outliers
         logger = setup_logger(log_file, verbose)
         
         # Initialize cleaner
-        cleaner = CSVCleaner(logger, zscore_threshold)
+        cleaner = CSVCleaner(zscore_threshold=zscore_threshold, logger=logger)
+
+        # Prepare find_replace dictionary
+        find_replace_dict = None
+        if find:
+            find_replace_dict = {'find': find, 'replace': replace or ''}
+
+        # Prepare drop_columns list
+        drop_columns_list = drop_columns.split(',') if drop_columns else None
         
         # Process the CSV
         result = cleaner.process_csv(
@@ -57,6 +75,11 @@ def clean_csv(input_file, natural_command, fix_names, fix_missing, drop_outliers
             fix_missing=fix_missing,
             drop_outliers=drop_outliers,
             standardize_types=standardize_types,
+            remove_duplicates=remove_duplicates,
+            trim_whitespace=trim_whitespace,
+            change_case=change_case,
+            find_replace=find_replace_dict,
+            drop_columns=drop_columns_list,
             output=output,
             excel=excel,
             preview=preview

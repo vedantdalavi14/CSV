@@ -228,7 +228,7 @@ class CSVCleaner:
                 'output_file': None,
                 'summary': []
             }
-    
+
     def _show_preview(self, df: pd.DataFrame, max_rows: int = 5):
         """Show a preview of the cleaned data using tabulate"""
         try:
